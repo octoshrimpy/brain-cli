@@ -199,6 +199,12 @@ _inherits metadata from note_
 
 ---
 
+## hotkey design
+
+ctrl    - base command key
+shift   - `plus` modifier, adds more to selections
+
+
 ## ideas
 
 * when modifying a task, create log accordingly
@@ -211,6 +217,14 @@ _inherits metadata from note_
   * for any frontend
   * auth?
   * single server per person? multi person?
+* filepicker/dirbrowser in a popup modal
+  * fzf/ripgrep
+  * thin
+    * tree-style, no previews
+  * full
+    * ranger-like, with content previews
+  * what if notes had templates
+    * types above were the basic templates shipped
 
 ---
 
