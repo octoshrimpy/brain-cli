@@ -21,20 +21,22 @@ type keyMap struct {
   Left    key.Binding
   Right   key.Binding
   Select  key.Binding
+  Enter   key.Binding
+  Search  key.Binding
   Help    key.Binding
   Quit    key.Binding
 }
 
 //  mini help
 func (k keyMap) ShortHelp() []key.Binding {
-  return []key.Binding{k.Help, k.Quit}
+  return []key.Binding{k.Search, k.Help, k.Quit}
 }
 
 // full help menu
 func (k keyMap) FullHelp() [][]key.Binding {
   return [][]key.Binding{
     {k.Up, k.Down, k.Left, k.Right},   // first column
-    {k.Help, k.Quit},                   // second column
+    {k.Search, k.Help, k.Quit},                   // second column
   }
 }
 
@@ -56,8 +58,16 @@ var keys = keyMap {
     key.WithHelp("→/d", "move right"),
   ),
   Select: key.NewBinding(
-    key.WithKeys(" ", "enter"),
+    key.WithKeys(" "),
     key.WithHelp("space", "toggle state"),
+  ),
+  Enter: key.NewBinding(
+    key.WithKeys("enter"),
+    key.WithHelp("↩", "edit file"),
+  ),
+  Search: key.NewBinding(
+    key.WithKeys("/"),
+    key.WithHelp("/", "search"),
   ),
   Help: key.NewBinding(
     key.WithKeys("?"),
@@ -79,9 +89,9 @@ type model struct {
   lastKey     string
   quitting     bool
 
-  choices     []string          // items on the list
-  cursor       int                // which todo list item our cursor is at
-  selected     map[int]struct{}  // which todo items are selected
+  choices      []string           // items on the list
+  cursor       int              	// which todo list item our cursor is at
+  selected     map[int]struct{}  	// which todo items are selected
 }
 
 

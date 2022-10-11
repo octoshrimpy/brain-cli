@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+    
+  <style>
+    @import 'https://octoshrimpy.github.io/microcss/micro.css';
+    @import "https://octoshrimpy.github.io/microcss/nf.css";
+
+    textarea {
+      border-radius: var(--radius-4);
+      background: var(--indigo-0);
+
+      transition: all 300ms var(--ease-squish-5);
+    }
+    
+    textarea:focus {
+      border-radius: var(--radius-2);
+      background: var(--orange-0);
+    }
+  </style>
+
+  <div class="container">
+    <div class="grid">
+      <span class="icon">
+        <i class="nf-weather-tornado"></i>
+      </span>
+    
+      <textarea id="grabme" name="" id=""></textarea>
+    </div>
+
+  </div>
+  <!-- <script src="https://raw.githubusercontent.com/KilledByAPixel/JSONCrush/master/JSONCrush.min.js"></script> -->
+  <script>
+    // window.onload(e => {
+      let readData = document.URL.toString().split('#')
+      let decoded = decodeURIComponent(readData)
+    
+      let inputElm =  document.querySelector('#grabme')
+      
+      inputElm.value = decoded
+      
+      inputElm.addEventListener('input', (e) => {
+        let data = e.target.value
+        let setUrlStr = encodeURIComponent(data)
+        let output = readData[0] + '#' + setUrlStr
+        
+        //https://stackoverflow.com/a/13451971
+        window.history.replaceState(undefined, "press", output)
+      })
+    // })
+  </script>
+</body>
+</html>
