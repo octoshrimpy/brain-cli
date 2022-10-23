@@ -11,6 +11,18 @@ _designation of systems for a todo and notes conglomerate_
   * log
   * card
 
+## structure
+* book
+  * todo
+    * task
+  * note types:
+    * base 
+    * idea
+    * snip
+    * log
+    * card
+    * box
+
 ---
   
 ## metadata
@@ -25,14 +37,14 @@ _designation of systems for a todo and notes conglomerate_
 * content
   * string
 * priority
-  * `* ice box`
+  * `* icebox`
   * `_ default`
   * `> hack (2)`
   * `! fixme (1)`
 * completionStatus
   * `_ default`
   * `o ongoing`
-  * `? to think`
+  * `? think`
   * `/ blocked`
   * `- cancelled`
   * `x done`
@@ -225,6 +237,7 @@ shift   - `plus` modifier, adds more to selections
     * ranger-like, with content previews
   * what if notes had templates
     * types above were the basic templates shipped
+  * git tracking from the main directory where books are kept
 
 ---
 

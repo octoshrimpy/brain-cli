@@ -6,5 +6,3 @@ _this system is being designed with ease of access and hackability in mind_
 * files can be stored within other files
   * delineated by folders containing README files within
 * books contain groups of notes
-
-
