@@ -70,6 +70,9 @@ _designation of systems for a todo and notes conglomerate_
 
 ---
 
+# examples
+
+
 ## todo
 _holds one or more sub-tasks_
 
@@ -238,6 +241,7 @@ shift   - `plus` modifier, adds more to selections
   * what if notes had templates
     * types above were the basic templates shipped
   * git tracking from the main directory where books are kept
+  * recurring tasks
 
 ---
 
