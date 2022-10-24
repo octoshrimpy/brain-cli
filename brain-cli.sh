@@ -24,13 +24,26 @@
 # tell user no notes
 # hint user at new note/book creation
 
-# for file
+# for each file
 # parse frontmatter
 # display file
 
-# for folder
+# for each folder
 # parse folder/readme.md (insensitive)
 # display book
 
 # if file is notetype todo
-# parse todo and show in sidebar
+# parse title and todos, show in sidebar
+
+# ==-------------------------------
+
+# commands
+#
+# create
+# 		book
+# 		note
+# 		note:type
+# 		todo
+# 		book:todo
+
+
