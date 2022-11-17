@@ -1,0 +1,3 @@
+'mouse' event:  MOUSE_LEFT_BUTTON_PRESSED { shift: false, ctrl: false, alt: false, x: 54, y: 31 }
+'mouse' event:  MOUSE_LEFT_BUTTON_RELEASED { shift: false, ctrl: false, alt: false, x: 56, y: 34 }
+

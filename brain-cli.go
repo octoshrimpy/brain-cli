@@ -4,14 +4,16 @@
 package main
 
 import (
-  "fmt"
-  "os"
-  "strings"
-  
-  "github.com/charmbracelet/bubbles/help"
-  "github.com/charmbracelet/bubbles/key"
-  tea "github.com/charmbracelet/bubbletea"
-  "github.com/charmbracelet/lipgloss"
+	"fmt"
+	"io/fs"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // help menu
@@ -96,14 +98,42 @@ type model struct {
 
 
 func initialModel() model {
-  return model {
+
+	choices := []fs.DirEntry{}
+
+	files, err := os.ReadDir("./demo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+		for _, file := range files {
+			if !file.IsDir() {
+				choices = append(choices, file)
+			}
+		}
+	
+		for _, file := range files {
+			if file.IsDir() {
+				choices = append(choices, file)
+			}
+		}
+
+	choicesNames := []string{}
+
+	for _, file := range files {
+		choicesNames = append(choicesNames, file.Name())
+	}
+
+	return model {
 
     keys:       keys,
     help:       help.New(),
     inputStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#FF75B7")),
 
-    // the todo list is a grocery list
-    choices: []string{"carrots", "celery", "kohlrabi"},
+
+
+    // list of files
+    choices: choicesNames,
 
     // a map of which choices are selected
     // using the mal like a mathematical set
