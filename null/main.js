@@ -49,7 +49,7 @@ var document = term.createDocument( {
   
   let filePath
   let fileContent
-  let fileLang
+  let fileLang = "javascript"
 
   if (process.argv.slice(2).length == 0) {
     fileContent = ""
@@ -69,7 +69,7 @@ var document = term.createDocument( {
     var StateMachine = require( 'text-machine' ) ;
   
     var stateMachine = new StateMachine( {
-      program: require( `text-machine/languages/${getLang(filePath)}.js` ) ,
+      program: require( `text-machine/languages/${fileLang}.js` ) ,
       api: termkit.TextBuffer.TextMachineApi
     } ) ;
   }
