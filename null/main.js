@@ -201,22 +201,29 @@ async function cmdHandler(cmdStr) {
       break;
     
     case "open" : 
-      let filePath = await createInput("path: ")
+      let opts = { baseDir: './', autoCompleteMenu: true, autoCompleteHint: true }
+      let filePath = await createInput("path: ", "", termkit.InlineFileInput, opts)
       await app.open(filePath)
       break
   }
 }
 
 
-function createInput(prompt = '', placeholder = '') {
+async function createInput(prompt = '', placeholder = '', type = null, opts = {}) {
 
+  let inputType = type != null ? type : termkit.InlineInput;
+  
+  //todo extract position into opts/settings so user can decide where it opens
+  let x = (term.width / 2) - 25 - 4
+  
   // setup params and init
-  var input = new termkit.InlineInput( {
+  var input = new (inputType)( {
+    ...opts,
     parent: document ,
     textAttr: { bgColor: 'blue' } ,
     voidAttr: { bgColor: 'blue' } ,
     placeholder: placeholder ,
-    x: 0 ,
+    x: x ,
     y: 10 ,
     prompt: {
       textAttr: { bgColor: 'blue' } ,
@@ -253,5 +260,7 @@ function createInput(prompt = '', placeholder = '') {
 
     input.on( 'cancel' , onCancel )
     input.on('submit', onSubmit)
+
+    // input on click outside the omni, cancel
   })
 }
