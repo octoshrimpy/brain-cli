@@ -227,7 +227,7 @@ function createInput(prompt = '', placeholder = '') {
     cancelable: true
   } )
 
-  document.focusNext() /// focus input; not working
+  document.giveFocusTo(input) /// focus input
   
   return new Promise((resolve, rej) => {
 
