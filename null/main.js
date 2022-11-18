@@ -11,7 +11,7 @@ let app = {}
 
 // =========---------
 
-
+//@todo figure out better logic for these methods and properties
 app.quit = () => {
   term.grabInput( false )
   term.hideCursor( false )
@@ -57,7 +57,8 @@ app.open = async (args) => {
   // return [filePath, fileContent, stateMachine]
 }
 
-
+// this is a hacky workaround. 
+//@todo find way to detect if term has alternateBuffer
 term.clear()
 
 function isFile(filePath) {  
@@ -76,6 +77,8 @@ function getExt(filePath) {
 function getLang(filePath) {
   let ext = getExt(filePath)
 
+
+  //@todo set default as plaintext
   switch(ext)
   {
     case "css":
@@ -99,11 +102,14 @@ var document = term.createDocument( {
   // backgroundAttr: { bgColor: 'magenta' , dim: true } ,
 } )
 
+//todo set default as plaintext
 var stateMachine = new StateMachine( {
   program: require( `text-machine/languages/javascript.js` ) ,
   api: termkit.TextBuffer.TextMachineApi
 } )
 
+//@todo extract most of these into an app.settings object
+//@todo figure out how to change statemachine on the fly
 app.textBox = new termkit.EditableTextBox( {
   parent: document ,
   content: "" ,
@@ -122,7 +128,8 @@ app.textBox = new termkit.EditableTextBox( {
   extraScrolling: true
 } )
 
-// attempt to open any args passed in
+// attempt to open any arg (filepath) passed in
+//@todo allow passing in whole directories
 app.open(process.argv.slice(2))
 
 term.on( 'key' , async function( key ) {
@@ -141,10 +148,12 @@ term.on( 'key' , async function( key ) {
     //   break
     
     // case 'CTRL_W' :
-    //   //todo extract this linewrap magic number into settings
+    //   //@todo extract this linewrap magic number into settings
     //   textBox.textBuffer.wrapAllLines( 20 )
     //   textBox.draw()
     //   break
+
+    //@todo add ctrl_o to open a file
 
     case 'CTRL_S' : 
       let content = app.textBox.getContent()
@@ -179,12 +188,14 @@ term.on( 'key' , async function( key ) {
 function saveFile(dir, contents, cb = () => {}) {
   fs.mkdir(dirname(dir), { recursive: true}, function (err) {
     if (err) return cb(err);
-
+    
     fs.writeFile(dir, contents, cb);
+    //@todo alert user that file was saved
   });
 }
 
 async function omni() {
+  //@todo set files in current open directory as autocomplete
   let cmd = await createInput()
   
   cmd != null && await cmdHandler(cmd)
@@ -201,6 +212,7 @@ async function cmdHandler(cmdStr) {
       break;
     
     case "open" : 
+      //@todo set basedir as the dir of currently open file
       let opts = { baseDir: './', autoCompleteMenu: true, autoCompleteHint: true }
       let filePath = await createInput("path: ", "", termkit.InlineFileInput, opts)
       await app.open(filePath)
@@ -208,12 +220,12 @@ async function cmdHandler(cmdStr) {
   }
 }
 
-
+//@todo figure out better way to handle all these options
 async function createInput(prompt = '', placeholder = '', type = null, opts = {}) {
 
   let inputType = type != null ? type : termkit.InlineInput;
   
-  //todo extract position into opts/settings so user can decide where it opens
+  //@todo extract position into opts/settings so user can decide where it opens
   let x = (term.width / 2) - 25 - 4
   
   // setup params and init
@@ -236,6 +248,8 @@ async function createInput(prompt = '', placeholder = '', type = null, opts = {}
 
   document.giveFocusTo(input) /// focus input
   
+  //@todo terminalkit has promises built-in. 
+  // figure it out, and replace this monstrosity
   return new Promise((resolve, rej) => {
 
     // create a cancel event in here,
@@ -261,6 +275,6 @@ async function createInput(prompt = '', placeholder = '', type = null, opts = {}
     input.on( 'cancel' , onCancel )
     input.on('submit', onSubmit)
 
-    // input on click outside the omni, cancel
+    //@todo input on click outside the omni, cancel
   })
 }
