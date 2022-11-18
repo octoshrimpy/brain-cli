@@ -242,10 +242,8 @@ function createInput(prompt = '', placeholder = '') {
     cancelable: true
   } )
 
-  document.focusNext() /// focus input
+  document.focusNext() /// focus input; not working
   
-  // return instance obj
-  // return input
   return new Promise((resolve, rej) => {
 
     // create a cancel event in here,
