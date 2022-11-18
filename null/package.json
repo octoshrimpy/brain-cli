@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "terminal-kit": "^3.0.0"
+    "terminal-kit": "^3.0.0",
+    "text-machine": "^0.5.1"
   }
 }
