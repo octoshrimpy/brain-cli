@@ -1,9 +1,62 @@
 "use strict"
-var termkit = require('terminal-kit')
-var fs = require('fs')
-const { dirname } = require('path')
+var   termkit      = require('terminal-kit')
+var   fs           = require('fs')
+const { dirname }  = require('path')
+var   StateMachine = require( 'text-machine' )
 
 var term = termkit.terminal
+
+let app = {}
+
+
+// =========---------
+
+
+app.quit = () => {
+  term.grabInput( false )
+  term.hideCursor( false )
+  term.styleReset()
+  term.clear()
+  process.exit()
+}
+
+app.open = async (args) => {
+
+  let filePath
+  let fileContent
+  let fileLang = "javascript"
+  
+  if (args.length == 0) {
+    fileContent = ""
+  } else {
+    filePath = args.toString()
+    fileLang = getLang(filePath)
+    // console.log(fileLang)
+    let pathIsFile = isFile(filePath)
+    
+    if (!pathIsFile) {
+      fileContent = `${filePath} is not a file!`
+    } else {
+      fileContent = fs.readFileSync(filePath, 'utf8')
+    }
+  }
+  
+  var stateMachine = new StateMachine( {
+    program: require( `text-machine/languages/${fileLang}.js` ) ,
+    api: termkit.TextBuffer.TextMachineApi
+  } )
+
+
+  // console.log(fileContent)
+  app.textBox.stateMachine = stateMachine
+  app.textBox.setContent(fileContent)
+  app.textBox.filePath = filePath
+
+  document.giveFocusTo( app.textBox )
+  app.textBox.textBuffer.moveTo(0,0)
+  // return [filePath, fileContent, stateMachine]
+}
+
 
 term.clear()
 
@@ -19,6 +72,7 @@ function getExt(filePath) {
   .slice(1)
   .join('.')
 }
+
 function getLang(filePath) {
   let ext = getExt(filePath)
 
@@ -45,48 +99,14 @@ var document = term.createDocument( {
   // backgroundAttr: { bgColor: 'magenta' , dim: true } ,
 } )
 
-  
+var stateMachine = new StateMachine( {
+  program: require( `text-machine/languages/javascript.js` ) ,
+  api: termkit.TextBuffer.TextMachineApi
+} )
 
-let filePath
-let fileContent
-let fileLang = "javascript"
-
-if (process.argv.slice(2).length == 0) {
-  fileContent = ""
-} else {
-  filePath = process.argv.slice(2).toString()
-  fileLang = getLang(filePath)
-  let pathIsFile = isFile(filePath)
-  
-  if (!pathIsFile) {
-    fileContent = `${filePath} is not a file!`
-  } else {
-    fileContent = fs.readFileSync(filePath)
-  }
-}
-
-try {
-  var StateMachine = require( 'text-machine' )
-
-  var stateMachine = new StateMachine( {
-    program: require( `text-machine/languages/${fileLang}.js` ) ,
-    api: termkit.TextBuffer.TextMachineApi
-  } )
-}
-catch( error ) {
-  if ( error.code === 'MODULE_NOT_FOUND' ) {
-    fileContent = 'Try to:\n"npm install text-machine"\n... to enjoy a mini demo of\na Javascript syntax highlighter!'
-  }
-  else {
-    throw error
-  }
-}
-
-
-
-var textBox = new termkit.EditableTextBox( {
+app.textBox = new termkit.EditableTextBox( {
   parent: document ,
-  content: fileContent ,
+  content: "" ,
   // attr: { bgColor: 'black' } ,
   //hidden: true ,
   x: 0 ,
@@ -102,62 +122,57 @@ var textBox = new termkit.EditableTextBox( {
   extraScrolling: true
 } )
 
-document.giveFocusTo( textBox )
-textBox.textBuffer.moveTo(0,0)
-
-//setTimeout( () => textBox.setTabWidth( 8 ) , 1000 )
-//setTimeout( () => textBox.setTabWidth( 2 ) , 2000 )
+// attempt to open any args passed in
+app.open(process.argv.slice(2))
 
 term.on( 'key' , async function( key ) {
   switch( key ) {
     case 'CTRL_C' :
-      term.grabInput( false )
-      term.hideCursor( false )
-      term.styleReset()
-      term.clear()
-      process.exit()
+      app.quit()
       break
     
-    case 'CTRL_D' :
-      term.saveCursor()
-      term.moveTo( 1 , 25 )
-      term.styleReset()
-      term.eraseDisplayBelow()
-      term( "Content: %s" , textBox.getContent().replace( /\n/g , '\\n' ).replace( /\t/g , '\\t' ) )
-      term.restoreCursor()
-      break
+    // case 'CTRL_D' :
+    //   term.saveCursor()
+    //   term.moveTo( 1 , 25 )
+    //   term.styleReset()
+    //   term.eraseDisplayBelow()
+    //   term( "Content: %s" , textBox.getContent().replace( /\n/g , '\\n' ).replace( /\t/g , '\\t' ) )
+    //   term.restoreCursor()
+    //   break
     
-    case 'CTRL_W' :
-      //todo extract this linewrap magic number into settings
-      textBox.textBuffer.wrapAllLines( 20 )
-      textBox.draw()
-      break
+    // case 'CTRL_W' :
+    //   //todo extract this linewrap magic number into settings
+    //   textBox.textBuffer.wrapAllLines( 20 )
+    //   textBox.draw()
+    //   break
 
     case 'CTRL_S' : 
-      let content = textBox.getContent()
+      let content = app.textBox.getContent()
 
       // not opened with a path, doesn't exist yet
-      if (!filePath) {
+      if (!app.textBox.filePath) {
 
         // ask for namepath
         let prompt = "enter filepath: "
         let placeholder = "save/to/path"
 
         // create floating input
-        filePath = await createInput(prompt, placeholder)
+        app.textBox.filePath = await createInput(prompt, placeholder)
 
       }
 
       // in case we cancelled the prompt and it returned empty 
-      if (filePath) {
+      if (app.textBox.filePath) {
 
         // write to path given
-        saveFile(filePath, content)
+        saveFile(app.textBox.filePath, content)
       }
       break
-    
-    case 'CTRL_SPACE' :
-      omni()
+
+    // https://github.com/cronvel/terminal-kit/blob/2915d8377f8211792e4e79548ec8c261c2c9c40f/lib/vte/toInputSequence.js#L173
+    // grabbing 'CTRL_SPACE'
+    case 'NUL' :
+      await omni()
   }
 } )
 
@@ -169,57 +184,27 @@ function saveFile(dir, contents, cb = () => {}) {
   });
 }
 
-function prompt(str = "") {
-  return new Promise((resolve, rej) => {
-    let width = 50
-    let height = 10
-    let x = 15 //(term.width / 2) - ((width + 2) / 2)
-    let y = 15 //(term.height / 2) - ((height + 2) / 2)
-    //todo listen to esc and cancel prompt without doing anything
-    let window = new termkit.Window({
-      parent: document,
-      x: x,
-      y: y,
-      height: height,
-      width: width,
-      inputHeight: 3,
-      title: str,
-      movable: false,
-      scrollable: false,
-    }) 
+async function omni() {
+  let cmd = await createInput()
   
-    let input = new termkit.InlineInput({
-      parent: window,
-      palceholder: "path/to/save",
-      attr: {color: 'green, italic: true'},
-      prompt: str,
-      width: window.width,
-      height: window.height
-    })
-  
-    input.on('submit', onSubmit)
-    input.on('cancel', onCancel)
-
-    function onSubmit(val) {
-      resolve(val)
-      term.restoreCursor()
-      window.destroy()
-    }
-
-    function onCancel() {
-      resolve()
-      term.restoreCursor()
-      window.destroy()
-    }
-
-    document.focusNext()
-  })
-
+  cmd != null && await cmdHandler(cmd)
 }
 
-function omni() {
-  let cmd = prompt()
-  console.log(prompt)
+async function cmdHandler(cmdStr) {
+  
+  let cmd = cmdStr.split(" ")[0]
+  // console.log(cmd)
+  switch(cmd)
+  {
+    case "quit" :
+      app.quit()
+      break;
+    
+    case "open" : 
+      let filePath = await createInput("path: ")
+      await app.open(filePath)
+      break
+  }
 }
 
 
