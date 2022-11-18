@@ -1,7 +1,7 @@
 "use strict"
 var termkit = require('terminal-kit')
 var fs = require('fs')
-const { resolve } = require('path')
+const { dirname } = require('path')
 
 var term = termkit.terminal
 
@@ -136,17 +136,23 @@ term.on( 'key' , async function( key ) {
     case 'CTRL_S' : 
       let content = textBox.getContent()
 
-      // opened with path
+      // not opened with a path, doesn't exist yet
       if (!filePath) {
+
         // ask for namepath
-        let str = "enter filepath"
-        filePath = await prompt(str)
-        console.log(filePath)
+        let prompt = "enter filepath: "
+        let placeholder = "save/to/path"
+
+        // create floating input
+        filePath = await createInput(prompt, placeholder)
+
       }
 
-      // in case we cancelled the prompt and it returned empty
+      // in case we cancelled the prompt and it returned empty 
       if (filePath) {
-        fs.writeFileSync(filePath, content)
+
+        // write to path given
+        saveFile(filePath, content)
       }
       break
     
@@ -154,6 +160,14 @@ term.on( 'key' , async function( key ) {
       omni()
   }
 } )
+
+function saveFile(dir, contents, cb = () => {}) {
+  fs.mkdir(dirname(dir), { recursive: true}, function (err) {
+    if (err) return cb(err);
+
+    fs.writeFile(dir, contents, cb);
+  });
+}
 
 function prompt(str = "") {
   return new Promise((resolve, rej) => {
@@ -206,4 +220,55 @@ function prompt(str = "") {
 function omni() {
   let cmd = prompt()
   console.log(prompt)
+}
+
+
+function createInput(prompt = '', placeholder = '') {
+
+  // setup params and init
+  var input = new termkit.InlineInput( {
+    parent: document ,
+    textAttr: { bgColor: 'blue' } ,
+    voidAttr: { bgColor: 'blue' } ,
+    placeholder: placeholder ,
+    x: 0 ,
+    y: 10 ,
+    prompt: {
+      textAttr: { bgColor: 'blue' } ,
+      content: prompt,
+      contentHasMarkup: true
+    } ,
+    width: 50 ,
+    cancelable: true
+  } )
+
+  document.focusNext() /// focus input
+  
+  // return instance obj
+  // return input
+  return new Promise((resolve, rej) => {
+
+    // create a cancel event in here,
+    // as they will always be the same
+    function onCancel() {
+      term.saveCursor()
+      input.destroy()
+      document.focusNext()
+      term.restoreCursor()
+
+      resolve(null)
+    }
+
+    function onSubmit() {
+      term.saveCursor()
+      input.destroy()
+      document.focusNext()
+      term.restoreCursor()
+
+      resolve(input.getContent())
+    }
+
+    input.on( 'cancel' , onCancel )
+    input.on('submit', onSubmit)
+  })
 }
