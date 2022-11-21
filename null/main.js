@@ -2,11 +2,43 @@
 var   termkit      = require('terminal-kit')
 var   fs           = require('fs')
 const { dirname }  = require('path')
+
+//@todo setup LSP
+// https://langium.org or something else from https://langserver.org
 var   StateMachine = require( 'text-machine' )
 
 var term = termkit.terminal
 
 let app = {}
+
+let layout = new termkit.layout({
+  parent: document,
+  boxChars: 'single',
+  layout: {
+    id: 'main',
+    y: 3,
+    widthPercent: 100,
+    heightPercent: 100, 
+    rows: [
+      {
+        id: '1st row',
+        heightPercent: 75,
+        columns: [
+          {id: 'percent', widthPercent: 100/3},
+          {id: 'auto'},
+          {id: 'fixed', width: 30}
+        ]
+      },
+      {
+        id: '2nd row',
+        columns: [
+          {id: 'fixed2', width: 20},
+          {}
+        ]
+      }
+    ]
+  }
+})
 
 
 // =========---------

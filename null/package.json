@@ -2,5 +2,13 @@
   "dependencies": {
     "terminal-kit": "^3.0.0",
     "text-machine": "^0.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "scripts": {
+    "start": "node ./main.js",
+    "start:dev": "nodemon ./main.js",
+    "start:file": "nodemon"
   }
 }
