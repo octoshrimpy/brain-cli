@@ -44,25 +44,26 @@ term.hideCursor()
 //layout.draw()
 // layout.setAutoResize( true )
 
-let content = new termkit.Text( {
-	parent: document.elements.auto ,
-	content: "hello world" ,
-	attr: { color: 'green' , italic: true }
-} )
+// app.content = new termkit.Text( {
+// 	parent: document.elements.auto ,
+// 	content: "hello world" ,
+// 	attr: { color: 'green' , italic: true }
+// } )
 
-let activityBar = new termkit.ColumnMenu({
+app.activityBar = new termkit.ColumnMenu({
   parent: document.elements.activitybar,
 	multiLineItems: true,
   items: [
     {
       content: "\n F \n",
+      disableBlink: true,
       value: "tree"
     }
   ]
-}).on('submit', onSubmit)
+}).on('submit', onActivityBarSubmit)
 
 // when a button in activityBar is pressed
-function onSubmit(buttonValue, action) {
+function onActivityBarSubmit(buttonValue, action) {
   switch(buttonValue) {
     case "tree":
       toggleTree()
@@ -76,17 +77,17 @@ function onSubmit(buttonValue, action) {
 //   width: 3
 // })
 
-let sidebar = new termkit.Text( {
+app.sidebar = new termkit.Text( {
 	parent: document.elements.sidebar ,
 	content: '' ,
 	attr: { color: 'cyan' , bold: true },
 } )
 
 
-sidebar.openPane    = null
-sidebar.widthOpen   = 20
-sidebar.widthClosed = 0
-sidebar.isOpen      = false
+app.sidebar.openPane    = null
+app.sidebar.widthOpen   = 25
+app.sidebar.widthClosed = 0
+app.sidebar.isOpen      = false
 
 term.grabInput( { mouse: 'button' } )
 
@@ -129,18 +130,18 @@ term.on( 'key' , function( key ) {
   
   function toggleTree() {
     let elm = layout.layoutDef.columns.filter(col => col.id == 'sidebar')[0]
-    if (sidebar.isOpen) {
-      while(elm.width > sidebar.widthClosed) {
+    if (app.sidebar.isOpen) {
+      while(elm.width > app.sidebar.widthClosed) {
         elm.width -= 1
         layout.computeBoundingBoxes()
         layout.redraw()
       }
       
     } else {
-      sidebar.openPane = "tree"
-      // sidebar.setContent(app.tree)
+      app.sidebar.openPane = "tree"
+      // app.sidebar.setContent(app.sidebar.tree)
   
-      while(elm.width < sidebar.widthOpen) {
+      while(elm.width < app.sidebar.widthOpen) {
         elm.width += 1
         layout.computeBoundingBoxes()
         layout.redraw()
@@ -149,7 +150,7 @@ term.on( 'key' , function( key ) {
 
   layout.computeBoundingBoxes()
   layout.redraw()
-  sidebar.isOpen = !sidebar.isOpen
+  app.sidebar.isOpen = !app.sidebar.isOpen
 }
 
 
@@ -159,8 +160,6 @@ term.on( 'key' , function( key ) {
 // setup tree view
 
 function createTree(pathStr = __dirname) {
-  let folderClosed = "▪"
-  let folderOpen   = "▫"
 
   //@todo extract this into settings
   let options = {
@@ -168,45 +167,165 @@ function createTree(pathStr = __dirname) {
     foldersFirst: true
   }
 
+  let treeItems = path2obj(pathStr)
+  app.sidebar.tree = new termkit.ColumnMenu({
+    width: 100,
+    parent: document.elements.sidebar,
+    items: treeItems,
+		disposition: 'inline'
+  }).on('focus', onTreeFocus)
+}
+createTree()
 
-  // sort them after grabbing
-  let treeContent = fs.readdirSync(pathStr)
-      .sort((a, b) => {
-        path.parse(a).name.normalize().localeCompare(path.parse(b).name.normalize())
+function path2obj(pathStr = __dirname, depth = 1) {
+
+  //@todo extract this into settings
+  let folderClosed = "🖿"
+  let folderOpen   = "🗁"
+
+  let contents = fs.readdirSync(pathStr)      
+    .sort((a, b) => {
+      path.parse(a).name.normalize().localeCompare(path.parse(b).name.normalize())
   })
 
   // split them up
-  let files = treeContent.filter(file => fs.lstatSync(path.join(pathStr, file)).isFile())
-  let folders = treeContent.filter(file => !fs.lstatSync(path.join(pathStr, file)).isFile())
+  let files = contents.filter(file => fs.lstatSync(path.join(pathStr, file)).isFile())
+  let folders = contents.filter(file => !fs.lstatSync(path.join(pathStr, file)).isFile())
 
   let treeItems = []
 
   folders.forEach(folder => {
+
+    // let children = path2obj(folder, depth - 1)
+    let children = [ {content: "hi", value: "hi"}]
     treeItems.push({
-      content: `${path.parse(folder).name.normalize()}/`,
-      value: folder
+      content: `${folderClosed} ${path.parse(folder).name.normalize()}/`,
+      value: `${folder}`,
+      disableBlink: true,
+      items: children,
+      disposition: 'inline',
+      openOn: 'parentFocus' ,
+      closeOn: 'parentFocus' ,
+      type: "folder"
+      // path: 
     })
   })
   
   files.forEach(file => {
     treeItems.push({
-      content: path.parse(file).base,
-      value: file
+      content: `  ${path.parse(file).base}`,
+      value: `${file}`,
+      disableBlink: true,
+      type: "file",
     })
   })
 
-  app.tree = new termkit.ColumnMenu({
-    // width: 20,
-    parent: document.elements.sidebar,
-    items: treeItems
-  })
+  return treeItems
 }
-createTree()
+
+function onTreeFocus(buttonValue, action) {
+
+  let item = app.sidebar.tree.getItem( buttonValue )
+  
+  if (item.type == "folder") {
+    // app.sidebar.tree.setItem(item, {content: "hello world"})
+    // console.log(item)
+
+    //@todo implement this custom tree collapse menu
+    // if folder state is closed
+      // get index of folder clicked in app.sidebar.tree
+      // get children that should show
+      // get indentation level from folder clicked
+      // add new children to app.sidebar.tree, with left indentation
+      // set folder state to open
+    // else
+      // for every item after folder that has a bigger indentation number
+        // item.destroy
+      // set folder state to closed
+  } else
+  if (item.type == "file") {
+    app.content.setContent()
+  }
+}
+
+//=======================================================
+
+    
+let fileLang = "javascript"
+var stateMachine = new StateMachine( {
+  program: require( `text-machine/languages/${fileLang}.js` ) ,
+  api: termkit.TextBuffer.TextMachineApi
+} )
 
 
 
+let editor = new termkit.EditableTextBox( {
+  parent: document.elements.auto ,
+  content: "" ,
+  x: 3,
+  width: term.width,
+  height: term.height ,
+  scrollable: true ,
+  vScrollBar: true ,
+  tabWidth: 2 ,
+  lineWrap: true ,
+  wordWrap: true ,
+  stateMachine: stateMachine,
+  extraScrolling: true
+} )
+
+editor.open = async (args) => {
+
+  let dirpath = __dirname
+  let filePath
+  let fileContent = ""
+
+
+  // app.createTree(dirpath)
+  
+  if (args.length == 0) {
+    fileContent = ""
+  } else {
+    filePath = args.toString()
+    // fileLang = termkit.fileHelpers.getLang(filePath)
+    fileLang = "javascript"
+    let pathIsFile = fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()
+    
+    if (!pathIsFile) {
+      fileContent = `${filePath} is not a file!`
+    } else {
+      fileContent = fs.readFileSync(filePath, 'utf8')
+    }
+  }
+  
+  var stateMachine = new StateMachine( {
+    program: require( `text-machine/languages/${fileLang}.js` ) ,
+    api: termkit.TextBuffer.TextMachineApi
+  } )
+
+
+  // console.log(fileContent)
+  editor.stateMachine = stateMachine
+  editor.setContent(fileContent)
+  editor.filePath = filePath
+
+  document.giveFocusTo( editor )
+  editor.textBuffer.moveTo(0,0)
+}
+
+
+
+
+
+
+
+//=======================================================
 // -- prep for user pre-first render
 
-layout.layoutDef.columns.filter(col => col.id == 'sidebar')[0].width = sidebar.widthClosed
+layout.layoutDef.columns.filter(col => col.id == 'sidebar')[0].width = app.sidebar.widthClosed
 layout.computeBoundingBoxes()
 layout.redraw()
+
+
+//@todo allow passing in whole directories
+editor.open(process.argv.slice(2))
