@@ -49,12 +49,13 @@ update_last_seen() {
 
 main() {
   
+  _options+=("Exit:exit_app")
+  
   while true; do
     # Clear the screen
     clear
 
     # Define the options
-    _options+=("Exit:exit_app")
     options=()
     for option in "${_options[@]}"; do
       option_name="${option%%:*}"

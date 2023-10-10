@@ -1,2 +1,0 @@
-- Name: r
-- Relationship: Friend

@@ -18,16 +18,16 @@ create_new_contact() {
   first_name=""
 
   # Keep asking for the first name until it isn't blank
-  while [ -z "$first_name" ] && [ "$escaped" = false ]; do
+  while [ -z "$first_name" ]; do
     # Ask for first name
-    first_name=$(gum input --prompt="Enter first name:")
+    first_name=$(gum input --prompt="Enter first name: ")
 
     # Check if it's still blank and display an error message
     [ -z "$first_name" ] && echo "First name cannot be blank."
   done
   
   # Ask for last name (optional)
-  last_name=$(gum input --prompt="Enter last name (optional):")
+  last_name=$(gum input --prompt="Enter last name (optional): ")
 
   # Combine first and last name
   contact_name="$first_name"
@@ -41,7 +41,7 @@ create_new_contact() {
 
     # Ask user what to do
     local user_choice=$(printf '%s\n' "${existing_contact_options[@]}" \
-    | gum filter --prompt="Contact already exists. What would you like to do?")
+    | gum filter --prompt="Contact already exists. What would you like to do? ")
 
     case "$user_choice" in
       "Re-enter Name")
@@ -100,6 +100,26 @@ create_new_contact() {
     }" > "$data_dir/conversations.json"
   fi
 }
+
+
+list_contacts() {
+    # Check if there are any contacts
+    if [ ! -d "$data_dir/contacts" ] || [ -z "$(ls -A "$data_dir/contacts")" ]; then
+        echo "No contacts found."
+        sleep 1
+        return
+    fi
+
+    # Use gum's filter to select a contact name from the existing ones
+    selected_contact=$(ls "$data_dir/contacts" | gum filter --prompt="Select a contact: ")
+
+    # Display details for the selected contact using gum's pager
+    if [ -n "$selected_contact" ]; then
+        gum pager < "$data_dir/contacts/$selected_contact/contact.md"
+    fi
+}
+
+
 
 
 # Register contacts functions into global menu

@@ -1,2 +1,0 @@
-- Name: rocco
-- Relationship: Friend

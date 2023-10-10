@@ -1,2 +1,0 @@
-- Name: bar
-- Relationship: Friend
