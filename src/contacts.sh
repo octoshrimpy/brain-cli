@@ -23,7 +23,11 @@ create_new_contact() {
     first_name=$(gum input --prompt="Enter first name: ")
 
     # Check if it's still blank and display an error message
-    [ -z "$first_name" ] && echo "First name cannot be blank."
+    if [ -z "$first_name" ]; then
+      clear
+      echo "First name cannot be blank."
+      gum confirm "Cancel operation? " && return
+    fi
   done
   
   # Ask for last name (optional)
