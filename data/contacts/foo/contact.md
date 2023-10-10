@@ -1,0 +1,2 @@
+- Name: foo
+- Relationship: Friend

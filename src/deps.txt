@@ -1,0 +1,2 @@
+jq  @ https://stedolan.github.io/jq/        > JSON manipulation tool
+gum @ https://github.com/charmbracelet/gum  > Terminal UI library

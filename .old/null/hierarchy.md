@@ -1,0 +1,9 @@
+* app
+  * termkit
+  * document
+    * layout
+      * editor
+        * textInput
+        * tabs
+      * sidebar
+      * activitybar
